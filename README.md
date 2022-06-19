@@ -1,5 +1,7 @@
 [GitHub CLI](https://github.com/cli/cli) extension to work with topics
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/Brialius/gh-topics)](https://goreportcard.com/report/github.com/Brialius/gh-topics)
+
 ## Installation
 ```
 gh extension install Brialius/gh-topics
