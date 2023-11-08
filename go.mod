@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/cli/go-gh v1.2.1
-	github.com/cli/shurcooL-graphql v0.0.3
+	github.com/cli/shurcooL-graphql v0.0.4
 	github.com/spf13/pflag v1.0.5
 )
 
@@ -19,7 +19,6 @@ require (
 	github.com/muesli/termenv v0.15.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/thlib/go-timezone-local v0.0.0-20210907160436-ef149e42d28e // indirect
-	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
