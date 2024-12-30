@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/cli/go-gh/pkg/api"
+	"github.com/cli/go-gh/v2/pkg/api"
 	graphql "github.com/cli/shurcooL-graphql"
 	flag "github.com/spf13/pflag"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/cli/go-gh"
 )
 
 // GQLTimeout is the timeout for GraphQL requests
@@ -28,7 +26,7 @@ func GetRepoTopics(repo string) ([]string, error) {
 		Timeout:     GQLTimeout,
 	}
 
-	client, err := gh.RESTClient(&opts)
+	client, err := api.NewRESTClient(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +50,7 @@ func GetAllOrgTopics(org string) (map[string]int, error) {
 		Timeout:     GQLTimeout,
 	}
 
-	client, err := gh.GQLClient(&opts)
+	client, err := api.NewGraphQLClient(opts)
 
 	if err != nil {
 		return nil, fmt.Errorf("can't connect to Github: %w", err)
