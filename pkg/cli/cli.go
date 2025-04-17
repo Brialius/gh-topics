@@ -2,10 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"github.com/Brialius/gh-topics/pkg/api"
+	"github.com/Brialius/gh-topics/pkg/topics"
 	flag "github.com/spf13/pflag"
 	"os"
-	"strings"
 )
 
 var countRepos bool
@@ -33,30 +32,14 @@ func Run(args []string) {
 		ExitWithError("Please specify GitHub organization or repository (MyOrg or MyOrg/MyRepo)")
 	}
 
-	topics := make([]string, 0, 0)
-	var err error
-
-	if strings.Contains(args[0], "/") {
-		topics, err = api.GetRepoTopics(args[0])
-		if err != nil {
-			ExitWithError(fmt.Sprintf("Can't get topics for %s: %s", args[0], err.Error()))
-		}
-	} else {
-		topicsMap, err := api.GetAllOrgTopics(args[0])
-		if err != nil {
-			ExitWithError(fmt.Sprintf("Can't get topics for %s: %s", args[0], err.Error()))
-		}
-
-		for t, c := range topicsMap {
-			if countRepos {
-				topics = append(topics, fmt.Sprintf("%d\t%s", c, t))
-			} else {
-				topics = append(topics, t)
-			}
-		}
+	// Get topics using the topics package
+	topicsList, err := topics.GetTopics(args[0], countRepos)
+	if err != nil {
+		ExitWithError(fmt.Sprintf("Can't get topics for %s: %s", args[0], err.Error()))
 	}
 
-	for _, t := range topics {
+	// Print topics
+	for _, t := range topicsList {
 		fmt.Println(t)
 	}
 }

@@ -4,10 +4,10 @@ This document contains a prioritized list of actionable improvement tasks for th
 
 ## Code Structure and Architecture
 
-1. [ ] Refactor the codebase to follow a more modular structure:
+1. [x] Refactor the codebase to follow a more modular structure:
    - [x] Move API-related functions to a separate package (e.g., `pkg/api`)
    - [x] Create a dedicated CLI package for command handling (e.g., `pkg/cli`)
-   - [ ] Separate business logic from presentation layer
+   - [x] Separate business logic from presentation layer
 
 2. [ ] Implement a proper error handling strategy:
    - [ ] Create custom error types for different failure scenarios
