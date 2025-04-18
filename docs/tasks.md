@@ -9,20 +9,20 @@ This document contains a prioritized list of actionable improvement tasks for th
    - [x] Create a dedicated CLI package for command handling (e.g., `pkg/cli`)
    - [x] Separate business logic from presentation layer
 
-2. [ ] Implement a proper error handling strategy:
-   - [ ] Create custom error types for different failure scenarios
-   - [ ] Add context to errors for better debugging
-   - [ ] Improve error messages to be more user-friendly
+2. [x] Implement a proper error handling strategy:
+   - [x] Create custom error types for different failure scenarios
+   - [x] Add context to errors for better debugging
+   - [x] Improve error messages to be more user-friendly
 
-3. [ ] Add configuration management:
-   - [ ] Support for configuration files
-   - [ ] Environment variable support for API tokens and other settings
-   - [ ] Implement a config package to handle different configuration sources
+3. [x] Add configuration management:
+   - [x] Support for configuration files
+   - [x] Environment variable support for API tokens and other settings
+   - [x] Implement a config package to handle different configuration sources
 
 ## Testing
 
 4. [ ] Add comprehensive test coverage:
-   - [ ] Unit tests for core functionality
+   - [x] Unit tests for core functionality
    - [ ] Integration tests for API interactions
    - [ ] Mock GitHub API for testing
    - [ ] Set up test fixtures and test data
@@ -39,9 +39,9 @@ This document contains a prioritized list of actionable improvement tasks for th
    - [ ] Implement filtering and sorting options for topics
    - [ ] Add support for topic descriptions
 
-7. [ ] Improve output formatting:
-   - [ ] Add JSON output option
-   - [ ] Support for different output formats (table, CSV, etc.)
+7. [x] Improve output formatting:
+   - [x] Add JSON output option
+   - [x] Support for different output formats (table, CSV, etc.)
    - [ ] Colorized output for terminal
 
 8. [ ] Add pagination support:

@@ -3,6 +3,7 @@ package topics
 import (
 	"fmt"
 	"github.com/Brialius/gh-topics/pkg/api"
+	"github.com/Brialius/gh-topics/pkg/errors"
 	"strings"
 )
 
@@ -16,13 +17,13 @@ func GetTopics(target string, countRepos bool) ([]string, error) {
 		// Target is a repository
 		topics, err = api.GetRepoTopics(target)
 		if err != nil {
-			return nil, err
+			return nil, errors.NewAPIError(fmt.Sprintf("failed to get topics for repository %s", target), err)
 		}
 	} else {
 		// Target is an organization
 		topicsMap, err := api.GetAllOrgTopics(target)
 		if err != nil {
-			return nil, err
+			return nil, errors.NewAPIError(fmt.Sprintf("failed to get topics for organization %s", target), err)
 		}
 
 		// Format topics based on countRepos flag

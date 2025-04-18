@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"github.com/Brialius/gh-topics/pkg/errors"
 	"github.com/cli/go-gh/v2/pkg/api"
 	graphql "github.com/cli/shurcooL-graphql"
+	"strings"
 	"time"
 )
 
@@ -19,7 +21,7 @@ func GetRepoTopics(repo string) ([]string, error) {
 
 	client, err := api.NewRESTClient(opts)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewAPIError("failed to create REST client", err)
 	}
 
 	response := struct{ Names []string }{}
@@ -27,7 +29,7 @@ func GetRepoTopics(repo string) ([]string, error) {
 	// Assuming 100 topics per repo is enough
 	err = client.Get(fmt.Sprintf("repos/%s/topics?per_page=100", repo), &response)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewAPIError(fmt.Sprintf("failed to get topics for repository %s", repo), err)
 	}
 
 	return response.Names, nil
@@ -44,7 +46,7 @@ func GetAllOrgTopics(org string) (map[string]int, error) {
 	client, err := api.NewGraphQLClient(opts)
 
 	if err != nil {
-		return nil, fmt.Errorf("can't connect to Github: %w", err)
+		return nil, errors.NewAPIError(fmt.Sprintf("failed to create GraphQL client for organization %s", org), err)
 	}
 
 	var query struct {
@@ -80,7 +82,7 @@ func GetAllOrgTopics(org string) (map[string]int, error) {
 		err = client.Query("Topics", &query, variables)
 
 		if err != nil {
-			return nil, fmt.Errorf("GQL request query was failed: %w", err)
+			return nil, errors.NewAPIError(fmt.Sprintf("GraphQL query failed for organization %s", org), err)
 		}
 
 		after = &query.Organization.Repositories.PageInfo.EndCursor
