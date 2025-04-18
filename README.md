@@ -20,6 +20,9 @@ If no organization or repository is specified, the default organization from the
 
 - `-c, --count`: Count repositories for each topic (only applicable for organizations)
 - `-o, --output`: Output format (text, json, csv)
+- `-a, --add`: Add topics to a repository (comma-separated)
+- `-r, --remove`: Remove topics from a repository (comma-separated)
+- `--color`: Enable colorized output (enabled by default)
 - `-h, --help`: Show help message
 
 ### Examples
@@ -36,6 +39,18 @@ gh topics Brialius --output json
 
 # Get topics for an organization in CSV format
 gh topics Brialius --output csv
+
+# Add topics to a repository
+gh topics Brialius/gh-topics --add "cli,github,topics"
+
+# Remove topics from a repository
+gh topics Brialius/gh-topics --remove "unwanted-topic"
+
+# Add and remove topics in the same command
+gh topics Brialius/gh-topics --add "new-topic" --remove "old-topic"
+
+# Disable colorized output
+gh topics Brialius --color=false
 ```
 
 ## Configuration

@@ -2,9 +2,11 @@ package cli
 
 import (
 	"fmt"
+	"github.com/Brialius/gh-topics/pkg/api"
 	"github.com/Brialius/gh-topics/pkg/config"
 	"github.com/Brialius/gh-topics/pkg/errors"
 	"github.com/Brialius/gh-topics/pkg/topics"
+	"github.com/muesli/termenv"
 	flag "github.com/spf13/pflag"
 	"os"
 	"strings"
@@ -14,6 +16,12 @@ var (
 	countRepos   bool
 	outputFormat string
 	appConfig    *config.Config
+	addTopics    []string
+	removeTopics []string
+
+	// Terminal output
+	term        = termenv.EnvColorProfile()
+	colorOutput = true
 )
 
 // Init initializes the CLI flags and loads the configuration
@@ -31,6 +39,9 @@ func Init() {
 	// Set up flags with defaults from config
 	flag.BoolVarP(&countRepos, "count", "c", appConfig.CountRepos, "Count repos")
 	flag.StringVarP(&outputFormat, "output", "o", appConfig.OutputFormat, "Output format (text, json, csv)")
+	flag.StringSliceVarP(&addTopics, "add", "a", nil, "Add topics to repository (comma-separated)")
+	flag.StringSliceVarP(&removeTopics, "remove", "r", nil, "Remove topics from repository (comma-separated)")
+	flag.BoolVar(&colorOutput, "color", true, "Enable colorized output")
 }
 
 // Parse parses the command line arguments
@@ -41,7 +52,7 @@ func Parse() []string {
 
 // ExitWithError prints an error message and exits with code 1
 func ExitWithError(err error) {
-	fmt.Println(errors.UserFriendlyMessage(err))
+	fmt.Println(colorError(errors.UserFriendlyMessage(err)))
 	os.Exit(1)
 }
 
@@ -59,6 +70,40 @@ func Run(args []string) {
 		target = args[0]
 	}
 
+	// Check if we need to add or remove topics
+	// These operations are only valid for repositories, not organizations
+	if (len(addTopics) > 0 || len(removeTopics) > 0) && !strings.Contains(target, "/") {
+		ExitWithError(errors.NewInputError("adding or removing topics is only supported for repositories, not organizations", nil))
+	}
+
+	// Handle adding topics if requested
+	if len(addTopics) > 0 && strings.Contains(target, "/") {
+		coloredTopics := make([]string, len(addTopics))
+		for i, topic := range addTopics {
+			coloredTopics[i] = colorTopic(topic)
+		}
+		fmt.Printf("Adding topics to %s: %s\n", target, strings.Join(coloredTopics, ", "))
+		err := api.AddRepoTopics(target, addTopics)
+		if err != nil {
+			ExitWithError(err)
+		}
+		fmt.Println(colorSuccess("Topics added successfully"))
+	}
+
+	// Handle removing topics if requested
+	if len(removeTopics) > 0 && strings.Contains(target, "/") {
+		coloredTopics := make([]string, len(removeTopics))
+		for i, topic := range removeTopics {
+			coloredTopics[i] = colorTopic(topic)
+		}
+		fmt.Printf("Removing topics from %s: %s\n", target, strings.Join(coloredTopics, ", "))
+		err := api.RemoveRepoTopics(target, removeTopics)
+		if err != nil {
+			ExitWithError(err)
+		}
+		fmt.Println(colorSuccess("Topics removed successfully"))
+	}
+
 	// Get topics using the topics package
 	topicsList, err := topics.GetTopics(target, countRepos)
 	if err != nil {
@@ -72,9 +117,19 @@ func Run(args []string) {
 	case "csv":
 		printCSV(topicsList)
 	default:
-		// Default to text format
+		// Default to text format with colors
 		for _, t := range topicsList {
-			fmt.Println(t)
+			if countRepos && strings.Contains(t, "\t") {
+				// Split count and topic
+				parts := strings.SplitN(t, "\t", 2)
+				if len(parts) == 2 {
+					fmt.Printf("%s\t%s\n", colorCount(parts[0]), colorTopic(parts[1]))
+				} else {
+					fmt.Println(colorTopic(t))
+				}
+			} else {
+				fmt.Println(colorTopic(t))
+			}
 		}
 	}
 }
@@ -103,4 +158,36 @@ func printCSV(topics []string) {
 			fmt.Println(topic)
 		}
 	}
+}
+
+// colorSuccess returns a string formatted as a success message
+func colorSuccess(msg string) string {
+	if !colorOutput {
+		return msg
+	}
+	return termenv.String(msg).Foreground(term.Color("2")).String() // Green
+}
+
+// colorError returns a string formatted as an error message
+func colorError(msg string) string {
+	if !colorOutput {
+		return msg
+	}
+	return termenv.String(msg).Foreground(term.Color("1")).String() // Red
+}
+
+// colorTopic returns a string formatted as a topic
+func colorTopic(topic string) string {
+	if !colorOutput {
+		return topic
+	}
+	return termenv.String(topic).Foreground(term.Color("4")).String() // Blue
+}
+
+// colorCount returns a string formatted as a count
+func colorCount(count string) string {
+	if !colorOutput {
+		return count
+	}
+	return termenv.String(count).Foreground(term.Color("3")).String() // Yellow
 }
