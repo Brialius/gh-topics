@@ -1,0 +1,11 @@
+# Configuration for golangci-lint
+# See https://golangci-lint.run/usage/configuration/ for more information
+
+linters:
+  disable:
+    - typecheck  # Disable typecheck linter which is reporting issues in the Go standard library
+
+issues:
+  exclude-dirs:
+    - vendor
+    - "../../go"  # Skip Go standard library

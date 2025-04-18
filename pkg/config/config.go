@@ -4,7 +4,7 @@ package config
 import (
 	"fmt"
 	"github.com/Brialius/gh-topics/pkg/errors"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"strings"
