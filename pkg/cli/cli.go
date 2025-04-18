@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/Brialius/gh-topics/pkg/api"
 	"github.com/Brialius/gh-topics/pkg/config"
 	"github.com/Brialius/gh-topics/pkg/errors"
 	"github.com/Brialius/gh-topics/pkg/topics"
@@ -16,8 +15,6 @@ var (
 	countRepos   bool
 	outputFormat string
 	appConfig    *config.Config
-	addTopics    []string
-	removeTopics []string
 
 	// Terminal output
 	term        = termenv.EnvColorProfile()
@@ -39,8 +36,6 @@ func Init() {
 	// Set up flags with defaults from config
 	flag.BoolVarP(&countRepos, "count", "c", appConfig.CountRepos, "Count repos")
 	flag.StringVarP(&outputFormat, "output", "o", appConfig.OutputFormat, "Output format (text, json, csv)")
-	flag.StringSliceVarP(&addTopics, "add", "a", nil, "Add topics to repository (comma-separated)")
-	flag.StringSliceVarP(&removeTopics, "remove", "r", nil, "Remove topics from repository (comma-separated)")
 	flag.BoolVar(&colorOutput, "color", true, "Enable colorized output")
 }
 
@@ -68,40 +63,6 @@ func Run(args []string) {
 		target = appConfig.DefaultOrg
 	} else {
 		target = args[0]
-	}
-
-	// Check if we need to add or remove topics
-	// These operations are only valid for repositories, not organizations
-	if (len(addTopics) > 0 || len(removeTopics) > 0) && !strings.Contains(target, "/") {
-		ExitWithError(errors.NewInputError("adding or removing topics is only supported for repositories, not organizations", nil))
-	}
-
-	// Handle adding topics if requested
-	if len(addTopics) > 0 && strings.Contains(target, "/") {
-		coloredTopics := make([]string, len(addTopics))
-		for i, topic := range addTopics {
-			coloredTopics[i] = colorTopic(topic)
-		}
-		fmt.Printf("Adding topics to %s: %s\n", target, strings.Join(coloredTopics, ", "))
-		err := api.AddRepoTopics(target, addTopics)
-		if err != nil {
-			ExitWithError(err)
-		}
-		fmt.Println(colorSuccess("Topics added successfully"))
-	}
-
-	// Handle removing topics if requested
-	if len(removeTopics) > 0 && strings.Contains(target, "/") {
-		coloredTopics := make([]string, len(removeTopics))
-		for i, topic := range removeTopics {
-			coloredTopics[i] = colorTopic(topic)
-		}
-		fmt.Printf("Removing topics from %s: %s\n", target, strings.Join(coloredTopics, ", "))
-		err := api.RemoveRepoTopics(target, removeTopics)
-		if err != nil {
-			ExitWithError(err)
-		}
-		fmt.Println(colorSuccess("Topics removed successfully"))
 	}
 
 	// Get topics using the topics package

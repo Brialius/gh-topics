@@ -35,7 +35,7 @@ This document contains a prioritized list of actionable improvement tasks for th
 ## Features and Functionality
 
 6. [x] Enhance topic management capabilities:
-   - [x] Add support for adding/removing topics
+   - [x] ~~Add support for adding/removing topics~~ (Removed as it's now implemented in GitHub CLI)
    - [ ] Implement filtering and sorting options for topics
    - [ ] Add support for topic descriptions
 
