@@ -3,7 +3,7 @@ module github.com/Brialius/gh-topics
 go 1.25.0
 
 require (
-	github.com/cli/go-gh/v2 v2.16.1
+	github.com/cli/go-gh/v2 v2.16.2
 	github.com/cli/shurcooL-graphql v0.0.4
 	github.com/spf13/pflag v1.0.10
 )
