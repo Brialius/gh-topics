@@ -11,6 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Embed release version
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PYTHON'
+          import json
+          import os
+          from pathlib import Path
+          version = json.dumps(os.environ["RELEASE_VERSION"])
+          Path("version_generated.go").write_text(
+              "package main\n\nfunc init() { version = " + version + " }\n"
+          )
+          PYTHON
       - uses: cli/gh-extension-precompile@v2
         with:
           go_version_file: go.mod
