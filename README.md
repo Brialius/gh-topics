@@ -92,8 +92,8 @@ GH_TOPICS_DEFAULT_ORG=cli gh topics
 ### Output formats
 
 - **Text:** one topic per line. With `--count`, each line contains the count, a tab, and the topic name.
-- **JSON:** an array of strings. With `--count`, each string contains the count and topic separated by an escaped tab, for example `["3\tcli", "2\tgolang"]`; counts are not separate object fields.
-- **CSV:** one topic per row, with no header. With `--count`, the count and topic remain tab-separated within each row; they are not separate comma-separated columns.
+- **JSON:** an array of topic-name strings. With `--count`, an array of objects with a `topic` string and a numeric `count`, for example `[{"topic":"cli","count":3},{"topic":"golang","count":2}]`.
+- **CSV:** one topic per row, with no header. With `--count`, a `topic,count` header followed by separate topic and count columns, for example `cli,3`.
 
 The counts above are illustrative. `--count` has no effect on a single-repository query. Unrecognized output formats fall back to text.
 
