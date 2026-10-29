@@ -3,27 +3,26 @@ package topics
 import (
 	"fmt"
 	"github.com/Brialius/gh-topics/pkg/api"
-	"github.com/Brialius/gh-topics/pkg/errors"
 	"strings"
 )
 
 // GetTopics returns a slice of topics for a repository or organization
-// If countRepos is true, each topic will be prefixed with the number of repositories using it
+// If countRepos is true and target is an organization, each topic is prefixed with its repository count and a tab.
 func GetTopics(target string, countRepos bool) ([]string, error) {
-	topics := make([]string, 0, 0)
+	topics := make([]string, 0)
 	var err error
 
 	if strings.Contains(target, "/") {
 		// Target is a repository
 		topics, err = api.GetRepoTopics(target)
 		if err != nil {
-			return nil, errors.NewAPIError(fmt.Sprintf("failed to get topics for repository %s", target), err)
+			return nil, err
 		}
 	} else {
 		// Target is an organization
 		topicsMap, err := api.GetAllOrgTopics(target)
 		if err != nil {
-			return nil, errors.NewAPIError(fmt.Sprintf("failed to get topics for organization %s", target), err)
+			return nil, err
 		}
 
 		// Format topics based on countRepos flag

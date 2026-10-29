@@ -38,7 +38,7 @@ lint:
 	@echo "Running linter..."
 	@if [ -z "$(GOLANGCI_LINT)" ]; then \
 		echo "golangci-lint not found, installing..."; \
-		$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
+		$(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0; \
 	fi
 	golangci-lint run ./...
 

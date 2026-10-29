@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -65,7 +66,7 @@ func TestUserFriendlyMessage(t *testing.T) {
 				Message: "test message",
 				Err:     errors.New("wrapped error"),
 			},
-			want: "GitHub API error: test message. Please check your network connection and try again.",
+			want: "GitHub API error: test message: wrapped error",
 		},
 		{
 			name: "Config error",
@@ -123,5 +124,17 @@ func TestNewAPIError(t *testing.T) {
 	}
 	if appErr.Err != wrappedErr {
 		t.Errorf("NewAPIError().Err = %v, want %v", appErr.Err, wrappedErr)
+	}
+}
+
+func TestUserFriendlyMessagePreservesCauses(t *testing.T) {
+	for _, kind := range []ErrorType{APIError, ConfigError, InputError, InternalError} {
+		for _, cause := range []string{"HTTP 401: Bad credentials", "HTTP 404: Not Found", "HTTP 429: rate limit", "config.yml: yaml: line 3: invalid syntax"} {
+			err := &AppError{Type: kind, Message: "operation failed", Err: errors.New(cause)}
+			got := UserFriendlyMessage(err)
+			if !strings.Contains(got, cause) || !strings.Contains(got, "operation failed") {
+				t.Errorf("cause lost for %s: %s", kind, got)
+			}
+		}
 	}
 }

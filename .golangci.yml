@@ -1,11 +1,5 @@
-# Configuration for golangci-lint
-# See https://golangci-lint.run/usage/configuration/ for more information
+# Configuration for golangci-lint v2. Vendored code is excluded by default.
+version: "2"
 
 linters:
-  disable:
-    - typecheck  # Disable typecheck linter which is reporting issues in the Go standard library
-
-issues:
-  exclude-dirs:
-    - vendor
-    - "../../go"  # Skip Go standard library
+  default: standard

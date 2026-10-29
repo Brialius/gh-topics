@@ -101,7 +101,7 @@ The counts above are illustrative. `--count` has no effect on a single-repositor
 
 The extension uses GitHub CLI authentication. For interactive use, sign in with `gh auth login`. For automation against github.com, provide `GH_TOKEN` or `GITHUB_TOKEN`; `GH_TOKEN` takes precedence.
 
-The `GH_TOPICS_TOKEN` environment variable and YAML `token` field are currently read by the configuration loader but are not used by the API client. Use GitHub CLI authentication or the standard token environment variables instead.
+The `GH_TOPICS_TOKEN` environment variable and YAML `token` field are not supported. Use GitHub CLI authentication or the standard token environment variables instead.
 
 ## Configuration
 
@@ -120,7 +120,7 @@ output_format: text
 count_repos: false
 ```
 
-A configuration file is optional. If the selected file cannot be read or parsed, the CLI prints a warning and uses built-in defaults, skipping environment-based settings for that run.
+A configuration file is optional. If the selected file cannot be read or parsed, the CLI prints a warning and uses built-in defaults for file settings, then applies environment variables and explicit CLI flags.
 
 ### Environment variables
 

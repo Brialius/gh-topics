@@ -1,13 +1,10 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/Brialius/gh-topics/pkg/errors"
 	"github.com/cli/go-gh/v2/pkg/api"
 	graphql "github.com/cli/shurcooL-graphql"
-	"strings"
 	"time"
 )
 
@@ -103,128 +100,4 @@ func GetAllOrgTopics(org string) (map[string]int, error) {
 	}
 
 	return topicsMap, nil
-}
-
-// AddRepoTopics adds topics to a repository
-// It returns an error if the operation fails
-func AddRepoTopics(repo string, newTopics []string) error {
-	if len(newTopics) == 0 {
-		return errors.NewInputError("no topics provided to add", nil)
-	}
-
-	// Get current topics first
-	currentTopics, err := GetRepoTopics(repo)
-	if err != nil {
-		return errors.NewAPIError(fmt.Sprintf("failed to get current topics for repository %s", repo), err)
-	}
-
-	// Create a map for quick lookup
-	topicsMap := make(map[string]bool)
-	for _, topic := range currentTopics {
-		topicsMap[topic] = true
-	}
-
-	// Add new topics to the map
-	topicsAdded := false
-	for _, topic := range newTopics {
-		// Normalize topic name (lowercase, replace spaces with hyphens)
-		normalizedTopic := strings.ToLower(strings.ReplaceAll(topic, " ", "-"))
-		if !topicsMap[normalizedTopic] {
-			topicsMap[normalizedTopic] = true
-			topicsAdded = true
-		}
-	}
-
-	// If no new topics were added, return early
-	if !topicsAdded {
-		return nil
-	}
-
-	// Convert map back to slice
-	updatedTopics := make([]string, 0, len(topicsMap))
-	for topic := range topicsMap {
-		updatedTopics = append(updatedTopics, topic)
-	}
-
-	// Update topics via API
-	return updateRepoTopics(repo, updatedTopics)
-}
-
-// RemoveRepoTopics removes topics from a repository
-// It returns an error if the operation fails
-func RemoveRepoTopics(repo string, topicsToRemove []string) error {
-	if len(topicsToRemove) == 0 {
-		return errors.NewInputError("no topics provided to remove", nil)
-	}
-
-	// Get current topics first
-	currentTopics, err := GetRepoTopics(repo)
-	if err != nil {
-		return errors.NewAPIError(fmt.Sprintf("failed to get current topics for repository %s", repo), err)
-	}
-
-	// Create a map for quick lookup of topics to remove
-	removeMap := make(map[string]bool)
-	for _, topic := range topicsToRemove {
-		// Normalize topic name (lowercase, replace spaces with hyphens)
-		normalizedTopic := strings.ToLower(strings.ReplaceAll(topic, " ", "-"))
-		removeMap[normalizedTopic] = true
-	}
-
-	// Filter out topics to remove
-	updatedTopics := make([]string, 0, len(currentTopics))
-	topicsRemoved := false
-	for _, topic := range currentTopics {
-		if !removeMap[topic] {
-			updatedTopics = append(updatedTopics, topic)
-		} else {
-			topicsRemoved = true
-		}
-	}
-
-	// If no topics were removed, return early
-	if !topicsRemoved {
-		return nil
-	}
-
-	// Update topics via API
-	return updateRepoTopics(repo, updatedTopics)
-}
-
-// updateRepoTopics updates the topics for a repository
-// It's a helper function used by both AddRepoTopics and RemoveRepoTopics
-func updateRepoTopics(repo string, topics []string) error {
-	opts := api.ClientOptions{
-		EnableCache: false, // Don't cache for write operations
-		Timeout:     GQLTimeout,
-	}
-
-	client, err := api.NewRESTClient(opts)
-	if err != nil {
-		return errors.NewAPIError("failed to create REST client", err)
-	}
-
-	// GitHub API expects a JSON object with a "names" array
-	requestBody := struct {
-		Names []string `json:"names"`
-	}{
-		Names: topics,
-	}
-
-	// Marshal the request body to JSON
-	jsonData, err := json.Marshal(requestBody)
-	if err != nil {
-		return errors.NewAPIError("failed to marshal request body", err)
-	}
-
-	// Create a reader from the JSON data
-	bodyReader := bytes.NewReader(jsonData)
-
-	// PUT request to update topics
-	err = client.Put(fmt.Sprintf("repos/%s/topics", repo), bodyReader, nil)
-	if err != nil {
-		return errors.NewAPIError(fmt.Sprintf("failed to update topics for repository %s", repo), err)
-	}
-
-	return nil
 }

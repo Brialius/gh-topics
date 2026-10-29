@@ -1,10 +1,13 @@
 package cli
 
 import (
+	"bytes"
 	"encoding/json"
+	appErrors "github.com/Brialius/gh-topics/pkg/errors"
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime/debug"
 	"strings"
@@ -31,6 +34,8 @@ func TestCLI(t *testing.T) {
 		{name: "version ignores invalid config", args: []string{"--version"}, config: "[", want: "gh-topics version v1.2.3\n"},
 		{name: "short version", args: []string{"-v"}, want: "gh-topics version v1.2.3\n"},
 		{name: "no target", want: "DEFAULT TARGET"},
+		{name: "invalid file retains env target", config: "[", org: "env-org", args: []string{"--output=json"}, want: "[\n  \"go\"\n]\n", target: "env-org"},
+		{name: "uppercase file format", config: "default_org: file-org\noutput_format: JSON\n", want: "[\n  \"go\"\n]\n", target: "file-org"},
 		{name: "configured organization", config: "default_org: file-org\ncount_repos: true\noutput_format: json\n", want: "[\n  \"1\\tgo\"\n]\n", target: "file-org"},
 		{name: "environment overrides file", config: "default_org: file-org\n", org: "env-org", args: []string{"--color=false"}, want: "go\n", target: "env-org"},
 		{name: "explicit flags override file", config: "default_org: file-org\ncount_repos: true\noutput_format: json\n", args: []string{"cli", "--count=false", "--output=csv"}, want: "go\n", target: "cli"},
@@ -96,7 +101,11 @@ func TestCLI(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer out.Close()
+			defer func() {
+				if err := out.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
 			oldOut := os.Stdout
 			os.Stdout = out
 			t.Cleanup(func() { os.Stdout = oldOut })
@@ -135,5 +144,23 @@ func TestDevelopmentVersion(t *testing.T) {
 		if got := developmentVersion(info); got != tt.want {
 			t.Errorf("version = %q, want %q", got, tt.want)
 		}
+	}
+}
+
+func TestFatalErrorUsesStderr(t *testing.T) {
+	if os.Getenv("GH_TOPICS_TEST_FATAL") == "1" {
+		colorOutput = false
+		ExitWithError(appErrors.NewInputError("invalid target", nil))
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=^TestFatalErrorUsesStderr$")
+	cmd.Env = append(os.Environ(), "GH_TOPICS_TEST_FATAL=1")
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	err := cmd.Run()
+	if err == nil || cmd.ProcessState.ExitCode() != 1 {
+		t.Fatalf("exit = %v, want 1", err)
+	}
+	if stdout.Len() != 0 || !strings.Contains(stderr.String(), "invalid target") {
+		t.Fatalf("stdout=%q stderr=%q", stdout.String(), stderr.String())
 	}
 }

@@ -78,15 +78,19 @@ func NewInternalError(message string, err error) *AppError {
 // UserFriendlyMessage returns a user-friendly error message
 func UserFriendlyMessage(err error) string {
 	if appErr, ok := err.(*AppError); ok {
+		message := appErr.Message
+		if appErr.Err != nil {
+			message += ": " + appErr.Err.Error()
+		}
 		switch appErr.Type {
 		case APIError:
-			return fmt.Sprintf("GitHub API error: %s. Please check your network connection and try again.", appErr.Message)
+			return fmt.Sprintf("GitHub API error: %s", message)
 		case ConfigError:
-			return fmt.Sprintf("Configuration error: %s. Please check your configuration settings.", appErr.Message)
+			return fmt.Sprintf("Configuration error: %s. Please check your configuration settings.", message)
 		case InputError:
-			return fmt.Sprintf("Input error: %s. Please check your command arguments.", appErr.Message)
+			return fmt.Sprintf("Input error: %s. Please check your command arguments.", message)
 		case InternalError:
-			return fmt.Sprintf("Internal error: %s. This is likely a bug in the application.", appErr.Message)
+			return fmt.Sprintf("Internal error: %s. This is likely a bug in the application.", message)
 		}
 	}
 	return fmt.Sprintf("Error: %v", err)

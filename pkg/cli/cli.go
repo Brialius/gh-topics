@@ -72,7 +72,7 @@ func developmentVersion(info *debug.BuildInfo) string {
 }
 
 func printHelp(out io.Writer) {
-	fmt.Fprintf(out, `gh-topics version %s
+	_, _ = fmt.Fprintf(out, `gh-topics version %s
 
 List repository topics and discover topics across an organization.
 
@@ -101,7 +101,7 @@ func Parse() []string {
 
 // ExitWithError prints an error message and exits with code 1
 func ExitWithError(err error) {
-	fmt.Println(colorError(errors.UserFriendlyMessage(err)))
+	fmt.Fprintln(os.Stderr, colorError(errors.UserFriendlyMessage(err)))
 	os.Exit(1)
 }
 
@@ -122,7 +122,6 @@ func Run(args []string) {
 	appConfig, err = config.LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: %s\n", errors.UserFriendlyMessage(err))
-		appConfig = config.DefaultConfig()
 	}
 	if !flag.CommandLine.Changed("count") {
 		countRepos = appConfig.CountRepos
@@ -197,14 +196,6 @@ func printCSV(topics []string) {
 			fmt.Println(topic)
 		}
 	}
-}
-
-// colorSuccess returns a string formatted as a success message
-func colorSuccess(msg string) string {
-	if !colorOutput {
-		return msg
-	}
-	return termenv.String(msg).Foreground(term.Color("2")).String() // Green
 }
 
 // colorError returns a string formatted as an error message

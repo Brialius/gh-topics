@@ -16,16 +16,16 @@ This document contains a prioritized list of actionable improvement tasks for th
 
 3. [x] Add configuration management:
    - [x] Support for configuration files
-   - [x] Environment variable support for API tokens and other settings
+   - [x] Environment variable support for organization, output format, and repository counts; authentication delegated to GitHub CLI
    - [x] Implement a config package to handle different configuration sources
 
 ## Testing
 
-4. [x] Add comprehensive test coverage:
+4. [ ] Add comprehensive test coverage:
    - [x] Unit tests for core functionality
    - [x] Integration tests for API interactions
-   - [x] Mock GitHub API for testing
-   - [x] Set up test fixtures and test data
+   - [x] Stub the HTTP transport for CLI/API integration tests
+   - [x] Use inline response fixtures in integration tests
 
 5. [x] Implement CI pipeline for testing:
    - [x] Add GitHub Actions workflow for running tests
@@ -34,14 +34,14 @@ This document contains a prioritized list of actionable improvement tasks for th
 
 ## Features and Functionality
 
-6. [x] Enhance topic management capabilities:
+6. [ ] Enhance topic management capabilities:
    - [x] ~~Add support for adding/removing topics~~ (Removed as it's now implemented in GitHub CLI)
    - [ ] Implement filtering and sorting options for topics
    - [ ] Add support for topic descriptions
 
 7. [x] Improve output formatting:
    - [x] Add JSON output option
-   - [x] Support for different output formats (table, CSV, etc.)
+   - [x] Support text and CSV output
    - [x] Colorized output for terminal
 
 8. [ ] Add pagination support:
@@ -50,7 +50,7 @@ This document contains a prioritized list of actionable improvement tasks for th
 
 ## Documentation
 
-9. [x] Improve documentation:
+9. [ ] Improve documentation:
    - [x] Add comprehensive README with examples
    - [x] Create usage documentation with all command options
    - [ ] Add developer documentation for contributing
@@ -88,7 +88,7 @@ This document contains a prioritized list of actionable improvement tasks for th
     - [ ] Add command completion for shells
 
 15. [ ] Enhance error reporting:
-    - [ ] Provide more context in error messages
+    - [x] Preserve underlying API and configuration error causes
     - [ ] Add suggestions for resolving common errors
     - [ ] Implement verbose mode for debugging
 

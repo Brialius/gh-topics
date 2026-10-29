@@ -12,8 +12,6 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	// GitHub API token
-	Token string
 	// Default organization to use when no organization is specified
 	DefaultOrg string
 	// Default output format (text, json, csv)
@@ -25,7 +23,6 @@ type Config struct {
 // DefaultConfig returns the default configuration
 func DefaultConfig() *Config {
 	return &Config{
-		Token:        "",
 		DefaultOrg:   "",
 		OutputFormat: "text",
 		CountRepos:   false,
@@ -36,41 +33,34 @@ func DefaultConfig() *Config {
 func LoadConfig() (*Config, error) {
 	config := DefaultConfig()
 
-	// Load from config file
+	// A bad file must not prevent higher-priority environment settings from loading.
 	configFile, err := findConfigFile()
-	if err == nil {
+	if err == nil && configFile != "" {
 		err = loadFromFile(config, configFile)
-		if err != nil {
-			return nil, errors.NewConfigError("failed to load config from file", err)
-		}
 	}
-
-	// Override with environment variables
 	loadFromEnv(config)
-
-	return config, nil
+	return config, err
 }
 
-// findConfigFile looks for a config file in standard locations
+// findConfigFile returns the first existing file, or an empty path if none exists.
 func findConfigFile() (string, error) {
-	// Check for config file in current directory
-	if _, err := os.Stat(".gh-topics.config"); err == nil {
-		return ".gh-topics.config", nil
+	local := ".gh-topics.config"
+	if _, err := os.Stat(local); err == nil {
+		return local, nil
+	} else if !os.IsNotExist(err) {
+		return "", errors.NewConfigError("failed to inspect "+local, err)
 	}
-
-	// Check for config file in user's home directory
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", errors.NewConfigError("failed to get user home directory", err)
 	}
-
-	configPath := filepath.Join(home, ".config", "gh-topics", "config")
-	if _, err := os.Stat(configPath); err == nil {
-		return configPath, nil
+	path := filepath.Join(home, ".config", "gh-topics", "config")
+	if _, err := os.Stat(path); err == nil {
+		return path, nil
+	} else if !os.IsNotExist(err) {
+		return "", errors.NewConfigError("failed to inspect "+path, err)
 	}
-
-	// No config file found
-	return "", errors.NewConfigError("no config file found", nil)
+	return "", nil
 }
 
 // loadFromFile loads configuration from a YAML file
@@ -82,7 +72,6 @@ func loadFromFile(config *Config, path string) error {
 
 	// Create a temporary config to unmarshal into
 	var fileConfig struct {
-		Token        string `yaml:"token"`
 		DefaultOrg   string `yaml:"default_org"`
 		OutputFormat string `yaml:"output_format"`
 		CountRepos   bool   `yaml:"count_repos"`
@@ -94,14 +83,11 @@ func loadFromFile(config *Config, path string) error {
 	}
 
 	// Update the config with values from the file
-	if fileConfig.Token != "" {
-		config.Token = fileConfig.Token
-	}
 	if fileConfig.DefaultOrg != "" {
 		config.DefaultOrg = fileConfig.DefaultOrg
 	}
 	if fileConfig.OutputFormat != "" {
-		config.OutputFormat = fileConfig.OutputFormat
+		config.OutputFormat = strings.ToLower(fileConfig.OutputFormat)
 	}
 	config.CountRepos = fileConfig.CountRepos
 
@@ -110,12 +96,6 @@ func loadFromFile(config *Config, path string) error {
 
 // loadFromEnv loads configuration from environment variables
 func loadFromEnv(config *Config) {
-	if token := os.Getenv("GH_TOPICS_TOKEN"); token != "" {
-		config.Token = token
-	} else if token := os.Getenv("GITHUB_TOKEN"); token != "" {
-		config.Token = token
-	}
-
 	if org := os.Getenv("GH_TOPICS_DEFAULT_ORG"); org != "" {
 		config.DefaultOrg = org
 	}
