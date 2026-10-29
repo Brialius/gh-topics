@@ -4,13 +4,13 @@
 BINARY_NAME=gh-topics
 GO=go
 GOFLAGS=-trimpath
-LDFLAGS=-ldflags "-s -w"
+LDFLAGS=-ldflags "-s -w -X main.version=$(VERSION)"
 GOLANGCI_LINT=$(shell which golangci-lint)
 GO_FILES=$(shell find . -type f -name "*.go" -not -path "./vendor/*")
 COVERAGE_FILE=coverage.txt
 
-# Get the version from git tag or default to dev
-VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+# Override for a release; dev builds use embedded Go VCS metadata
+VERSION ?= dev
 
 # Check if Go version is at least 1.22
 GO_VERSION_CHECK=$(shell $(GO) version | grep -q "go1.2[2-9]" && echo "pass" || echo "fail")
