@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"github.com/Brialius/gh-topics/pkg/config"
 	"github.com/Brialius/gh-topics/pkg/errors"
@@ -10,6 +12,7 @@ import (
 	"io"
 	"os"
 	"runtime/debug"
+	"strconv"
 	"strings"
 )
 
@@ -143,58 +146,63 @@ func Run(args []string) {
 	}
 
 	// Get topics using the topics package
-	topicsList, err := topics.GetTopics(target, countRepos)
+	topicsList, err := topics.GetTopics(target)
 	if err != nil {
 		ExitWithError(err)
 	}
 
-	// Format and print topics based on output format
-	switch outputFormat {
+	includeCounts := countRepos && !strings.Contains(target, "/")
+	if err := writeTopics(os.Stdout, topicsList, outputFormat, includeCounts); err != nil {
+		ExitWithError(errors.NewInternalError("failed to write topics", err))
+	}
+}
+
+// writeTopics encodes structured data without putting presentation delimiters in fields.
+func writeTopics(out io.Writer, list []topics.Topic, format string, includeCounts bool) error {
+	switch format {
 	case "json":
-		printJSON(topicsList)
+		encoder := json.NewEncoder(out)
+		encoder.SetIndent("", "  ")
+		if includeCounts {
+			if list == nil {
+				list = []topics.Topic{}
+			}
+			return encoder.Encode(list)
+		}
+		names := make([]string, 0, len(list))
+		for _, topic := range list {
+			names = append(names, topic.Name)
+		}
+		return encoder.Encode(names)
 	case "csv":
-		printCSV(topicsList)
-	default:
-		// Default to text format with colors
-		for _, t := range topicsList {
-			if countRepos && strings.Contains(t, "\t") {
-				// Split count and topic
-				parts := strings.SplitN(t, "\t", 2)
-				if len(parts) == 2 {
-					fmt.Printf("%s\t%s\n", colorCount(parts[0]), colorTopic(parts[1]))
-				} else {
-					fmt.Println(colorTopic(t))
-				}
-			} else {
-				fmt.Println(colorTopic(t))
+		writer := csv.NewWriter(out)
+		if includeCounts {
+			if err := writer.Write([]string{"topic", "count"}); err != nil {
+				return err
 			}
 		}
-	}
-}
-
-// printJSON prints topics in JSON format
-func printJSON(topics []string) {
-	// Simple JSON array output
-	fmt.Print("[\n")
-	for i, topic := range topics {
-		fmt.Printf("  %q", topic)
-		if i < len(topics)-1 {
-			fmt.Print(",")
+		for _, topic := range list {
+			row := []string{topic.Name}
+			if includeCounts {
+				row = append(row, strconv.Itoa(topic.Count))
+			}
+			if err := writer.Write(row); err != nil {
+				return err
+			}
 		}
-		fmt.Print("\n")
-	}
-	fmt.Print("]\n")
-}
-
-// printCSV prints topics in CSV format
-func printCSV(topics []string) {
-	for _, topic := range topics {
-		// Handle topics with commas by quoting
-		if strings.Contains(topic, ",") {
-			fmt.Printf("\"%s\"\n", topic)
-		} else {
-			fmt.Println(topic)
+		writer.Flush()
+		return writer.Error()
+	default:
+		for _, topic := range list {
+			line := colorTopic(topic.Name)
+			if includeCounts {
+				line = colorCount(strconv.Itoa(topic.Count)) + "\t" + line
+			}
+			if _, err := fmt.Fprintln(out, line); err != nil {
+				return err
+			}
 		}
+		return nil
 	}
 }
 

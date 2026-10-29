@@ -1,44 +1,37 @@
 package topics
 
 import (
-	"fmt"
-	"github.com/Brialius/gh-topics/pkg/api"
 	"strings"
+
+	"github.com/Brialius/gh-topics/pkg/api"
 )
 
-// GetTopics returns a slice of topics for a repository or organization
-// If countRepos is true and target is an organization, each topic is prefixed with its repository count and a tab.
-func GetTopics(target string, countRepos bool) ([]string, error) {
-	topics := make([]string, 0)
-	var err error
-
-	if strings.Contains(target, "/") {
-		// Target is a repository
-		topics, err = api.GetRepoTopics(target)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		// Target is an organization
-		topicsMap, err := api.GetAllOrgTopics(target)
-		if err != nil {
-			return nil, err
-		}
-
-		// Format topics based on countRepos flag
-		for topic, count := range topicsMap {
-			if countRepos {
-				topics = append(topics, formatTopicWithCount(topic, count))
-			} else {
-				topics = append(topics, topic)
-			}
-		}
-	}
-
-	return topics, nil
+// Topic holds a topic name and the number of repositories using it.
+type Topic struct {
+	Name  string `json:"topic"`
+	Count int    `json:"count"`
 }
 
-// formatTopicWithCount formats a topic with its repository count
-func formatTopicWithCount(topic string, count int) string {
-	return fmt.Sprintf("%d\t%s", count, topic)
+// GetTopics returns topics and repository counts for a repository or organization.
+// A single-repository target has a count of one for each topic.
+func GetTopics(target string) ([]Topic, error) {
+	result := make([]Topic, 0)
+	if strings.Contains(target, "/") {
+		names, err := api.GetRepoTopics(target)
+		if err != nil {
+			return nil, err
+		}
+		for _, name := range names {
+			result = append(result, Topic{Name: name, Count: 1})
+		}
+	} else {
+		counts, err := api.GetAllOrgTopics(target)
+		if err != nil {
+			return nil, err
+		}
+		for name, count := range counts {
+			result = append(result, Topic{Name: name, Count: count})
+		}
+	}
+	return result, nil
 }
