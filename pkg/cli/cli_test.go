@@ -36,8 +36,8 @@ func TestCLI(t *testing.T) {
 		{name: "no target", want: "DEFAULT TARGET"},
 		{name: "invalid file retains env target", config: "[", org: "env-org", args: []string{"--output=json"}, want: "[\n  \"go\"\n]\n", target: "env-org"},
 		{name: "uppercase file format", config: "default_org: file-org\noutput_format: JSON\n", want: "[\n  \"go\"\n]\n", target: "file-org"},
-		{name: "configured organization", config: "default_org: file-org\ncount_repos: true\noutput_format: json\n", want: "[\n  {\n    \"topic\": \"go\",\n    \"count\": 1\n  }\n]\n", target: "file-org"},
-		{name: "organization CSV counts", args: []string{"cli", "--count", "--output=csv"}, want: "topic,count\ngo,1\n", target: "cli"},
+		{name: "configured organization", config: "default_org: file-org\ncount_repos: true\noutput_format: json\n", want: "[\n  {\n    \"topic\": \"go\",\n    \"count\": 2\n  }\n]\n", target: "file-org"},
+		{name: "organization CSV counts", args: []string{"cli", "--count", "--output=csv"}, want: "topic,count\ngo,2\n", target: "cli"},
 		{name: "repository count ignored", args: []string{"owner/repo", "--count", "--output=json"}, want: "[\n  \"go\"\n]\n", target: "owner/repo"},
 		{name: "environment overrides file", config: "default_org: file-org\n", org: "env-org", args: []string{"--color=false"}, want: "go\n", target: "env-org"},
 		{name: "explicit flags override file", config: "default_org: file-org\ncount_repos: true\noutput_format: json\n", args: []string{"cli", "--count=false", "--output=csv"}, want: "go\n", target: "cli"},
@@ -97,7 +97,7 @@ func TestCLI(t *testing.T) {
 					if query.Variables.Login != tt.target {
 						t.Errorf("target = %q, want %q", query.Variables.Login, tt.target)
 					}
-					body = `{"data":{"organization":{"repositories":{"pageInfo":{"endCursor":"","hasNextPage":false},"nodes":[{"repositoryTopics":{"nodes":[{"topic":{"name":"go"}}]}}]}}}}`
+					body = `{"data":{"organization":{"repositories":{"pageInfo":{"endCursor":"","hasNextPage":false},"nodes":[{"repositoryTopics":{"nodes":[{"topic":{"name":"go"}}]}},{"repositoryTopics":{"nodes":[{"topic":{"name":"go"}}]}}]}}}}`
 				}
 				return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(body)), Request: r}, nil
 			})

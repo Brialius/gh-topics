@@ -51,7 +51,7 @@ Results include only repositories accessible to the authenticated account. Organ
 
 | Option | Description | Default |
 | --- | --- | --- |
-| `-c, --count` | Prefix each topic with its repository count (organizations only). | `false` |
+| `-c, --count` | Include the repository count for each topic (organizations only). | `false` |
 | `-o, --output FORMAT` | Output format: `text`, `json`, or `csv`. | `text` |
 | `--color` | Enable colorized text output; use `--color=false` to disable it. | `true` |
 | `-h, --help` | Show version, usage, options, and examples. | — |
