@@ -100,8 +100,22 @@ func isolatedConfig(t *testing.T) string {
 		}
 	})
 	t.Setenv("HOME", dir)
+	t.Setenv("USERPROFILE", dir)
+	t.Setenv("home", dir)
 	for _, key := range []string{"GH_TOPICS_DEFAULT_ORG", "GH_TOPICS_OUTPUT_FORMAT", "GH_TOPICS_COUNT_REPOS"} {
 		t.Setenv(key, "")
 	}
 	return dir
+}
+
+func TestMissingHomeIsOptional(t *testing.T) {
+	isolatedConfig(t)
+	for _, key := range []string{"HOME", "USERPROFILE", "home"} {
+		t.Setenv(key, "")
+	}
+	t.Setenv("GH_TOPICS_DEFAULT_ORG", "env-org")
+	got, err := LoadConfig()
+	if err != nil || got.DefaultOrg != "env-org" {
+		t.Fatalf("config = %+v, error = %v", got, err)
+	}
 }

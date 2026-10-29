@@ -29,7 +29,8 @@ func DefaultConfig() *Config {
 	}
 }
 
-// LoadConfig loads the configuration from environment variables and config file
+// LoadConfig returns defaults overridden by a config file and then environment variables.
+// The config is never nil; a file error is a warning and environment settings still apply.
 func LoadConfig() (*Config, error) {
 	config := DefaultConfig()
 
@@ -52,7 +53,7 @@ func findConfigFile() (string, error) {
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", errors.NewConfigError("failed to get user home directory", err)
+		return "", nil
 	}
 	path := filepath.Join(home, ".config", "gh-topics", "config")
 	if _, err := os.Stat(path); err == nil {

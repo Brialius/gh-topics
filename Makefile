@@ -5,7 +5,6 @@ BINARY_NAME=gh-topics
 GO=go
 GOFLAGS=-trimpath
 LDFLAGS=-ldflags "-s -w -X main.version=$(VERSION)"
-GOLANGCI_LINT=$(shell which golangci-lint)
 GO_FILES=$(shell find . -type f -name "*.go" -not -path "./vendor/*")
 COVERAGE_FILE=coverage.txt
 
@@ -36,11 +35,7 @@ test:
 # Run linter
 lint:
 	@echo "Running linter..."
-	@if [ -z "$(GOLANGCI_LINT)" ]; then \
-		echo "golangci-lint not found, installing..."; \
-		$(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0; \
-	fi
-	golangci-lint run ./...
+	$(GO) run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0 run ./...
 
 # Clean build artifacts
 clean:

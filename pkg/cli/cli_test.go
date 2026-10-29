@@ -60,6 +60,8 @@ func TestCLI(t *testing.T) {
 				t.Setenv(key, "")
 			}
 			t.Setenv("HOME", dir)
+			t.Setenv("USERPROFILE", dir)
+			t.Setenv("home", dir)
 			t.Setenv("GH_CONFIG_DIR", dir)
 			t.Setenv("GH_CACHE_DIR", filepath.Join(dir, "cache"))
 			t.Setenv("GH_HOST", "github.com")

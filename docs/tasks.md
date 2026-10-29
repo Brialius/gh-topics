@@ -29,7 +29,7 @@ This document contains a prioritized list of actionable improvement tasks for th
 
 5. [x] Implement CI pipeline for testing:
    - [x] Add GitHub Actions workflow for running tests
-   - [x] Configure code coverage reporting
+   - [x] Save coverage as a GitHub artifact; upload to Codecov when CODECOV_TOKEN is configured
    - [x] Add linting checks to CI
 
 ## Features and Functionality
